@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSCB Alipur | Ultimate ERP v8.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sidebar-link.active { background: #1e40af; border-left: 4px solid #fff; }
+        .att-cell { min-width: 35px; height: 35px; cursor: pointer; border: 1px solid #e2e8f0; font-weight: 800; font-size: 10px; text-align: center; }
+        .att-p { background: #dcfce7; color: #166534; }
+        .att-a { background: #fee2e2; color: #991b1b; }
+        .att-l { background: #fef9c3; color: #854d0e; }
+        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid #e2e8f0; }
+        #loginOverlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+
+    <div id="loginOverlay">
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 text-center">
+            <img src="NSCB Logo.jpg" alt="Logo" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-blue-500 bg-white">
+            <h2 class="text-2xl font-black text-slate-800">NSCB ERP LOGIN</h2>
+            <p class="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Alipur, Haridwar</p>
+            <input type="text" id="loginUser" placeholder="Username" class="w-full border p-3 rounded-xl mb-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="loginPass" placeholder="Password" class="w-full border p-3 rounded-xl mb-6 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Login</button>
+            <p id="loginError" class="text-red-500 text-xs mt-4 font-bold hidden">Invalid Credentials!</p>
+        </div>
+    </div>
+
+    <aside class="w-72 bg-slate-900 text-white flex flex-col shrink-0 shadow-2xl">
+        <div class="p-8 border-b border-slate-700 bg-slate-950 flex flex-col items-center">
+            <img src="NSCB Logo.jpg" class="w-16 h-16 rounded-full border-2 border-white mb-2">
+            <h2 class="text-xl font-black tracking-tighter">NSCB ALIPUR</h2>
+            <p id="roleBadge" class="text-[9px] text-blue-400 font-bold uppercase tracking-widest bg-blue-900/30 px-2 py-1 rounded">ROLE</p>
+        </div>
+        <nav class="flex-1 mt-6 px-3 space-y-1">
+            <button data-role="admin" onclick="showTab('dashboard', this)" class="sidebar-link active w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">📊 Dashboard</button>
+            <button data-role="admin" onclick="showTab('students', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">🎓 Student Att.</button>
+            <button data-role="admin" onclick="showTab('staff', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">👥 Staff Payroll</button>
+            <button data-role="all" onclick="showTab('finance', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">💰 Financial Ledger</button>
+            <button data-role="admin" onclick="showTab('users', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">⚙️ User Settings</button>
+        </nav>
+        <button onclick="location.reload()" class="m-6 p-3 bg-red-900/20 text-red-400 text-xs font-bold rounded-xl border border-red-900/50">Logout</button>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white border-b p-5 flex justify-between items-center px-10 sticky top-0 z-50 shadow-sm">
+            <div class="flex items-center gap-4">
+                <select id="selSession" onchange="initGrids()" class="bg-blue-50 border-none rounded-lg font-black text-xs px-4 py-2 text-blue-700">
+                    <option value="2025">SESSION 2025-26</option>
+                    <option value="2026">SESSION 2026-27</option>
+                </select>
+                <select id="selMonth" onchange="initGrids()" class="bg-slate-100 border-none rounded-lg font-bold text-sm px-4 py-2">
+                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-6">
+                <input type="text" onkeyup="globalSearch(this)" placeholder="Search..." class="bg-slate-100 px-4 py-2 rounded-full text-xs w-48 border-none">
+                <div class="flex items-center gap-3">
+                    <span id="welcomeMsg" class="text-xs font-bold text-slate-600">User</span>
+                    <img src="NSCB Logo.jpg" class="w-10 h-10 rounded-full">
+                </div>
+            </div>
+        </header>
+
+        <div class="p-10 space-y-10">
+            <section id="dashboard" class="tab-content active grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Students</p>
+                    <h3 class="text-4xl font-black mt-2" id="dash-s">0</h3>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Monthly Exp.</p>
+                    <h3 class="text-4xl font-black mt-2 text-red-600">₹<span id="dash-exp-month">0</span></h3>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Staff Payout</p>
+                    <h3 class="text-4xl font-black mt-2 text-blue-600">₹<span id="dash-pay">0</span></h3>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Net Balance</p>
+                    <h3 class="text-4xl font-black mt-2 text-green-600">₹<span id="dash-bal">0</span></h3>
+                </div>
+            </section>
+
+            <section id="students" class="tab-content space-y-6">
+                <div class="bg-white p-8 rounded-3xl border shadow-sm grid grid-cols-4 gap-4">
+                    <input type="text" id="sName" placeholder="Name" class="border p-3 rounded-xl text-sm"><input type="text" id="sClass" placeholder="Class" class="border p-3 rounded-xl text-sm"><input type="text" id="sVendor" placeholder="Vendor" class="border p-3 rounded-xl text-sm"><button onclick="addStudent()" class="bg-blue-600 text-white font-bold rounded-xl">Add</button>
+                </div>
+                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto"><table class="w-full text-left" id="studentTable"><thead class="bg-slate-50 border-b"><tr id="sHead"></tr></thead><tbody id="sBody" class="divide-y"></tbody></table></div>
+            </section>
+
+            <section id="staff" class="tab-content space-y-6">
+                <div class="bg-white p-8 rounded-3xl border shadow-sm grid grid-cols-4 gap-4">
+                    <input type="text" id="stName" placeholder="Staff Name" class="border p-3 rounded-xl text-sm"><input type="text" id="stPost" placeholder="Post" class="border p-3 rounded-xl text-sm"><input type="number" id="stMonthly" placeholder="Salary" class="border p-3 rounded-xl text-sm"><button onclick="addStaff()" class="bg-slate-900 text-white font-bold rounded-xl">Add</button>
+                </div>
+                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto"><table class="w-full text-left" id="staffTable"><thead class="bg-slate-50 border-b"><tr id="stHead"></tr></thead><tbody id="stBody" class="divide-y"></tbody></table></div>
+            </section>
+
+            <section id="finance" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+                    <h3 class="font-black text-slate-800">Budget Allocation</h3>
+                    <div class="flex gap-2"><input type="text" id="newBudgetTitle" placeholder="Title" class="flex-1 border p-2 rounded-lg text-xs"><button onclick="addNewBudgetCategory()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">+</button></div>
+                    <select id="fTopic" class="w-full border p-3 rounded-xl text-sm"></select>
+                    <input type="number" id="fYearly" placeholder="Session Budget (₹)" class="w-full border p-3 rounded-xl text-sm"><button onclick="setYearly()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Allocate</button>
+                    <div id="balList" class="space-y-4 pt-4"></div>
+                </div>
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-8 rounded-3xl border shadow-sm">
+                        <h3 class="font-black mb-4">Expense for <span id="curMonthLabel">Month</span></h3>
+                        <div class="grid grid-cols-3 gap-4"><select id="expTopic" class="border p-3 rounded-xl text-sm"></select><input type="number" id="expAmt" placeholder="Amount" class="border p-3 rounded-xl text-sm"><button onclick="addExp()" class="bg-slate-800 text-white font-bold rounded-xl">Record</button></div>
+                    </div>
+                    <div class="bg-white rounded-3xl border shadow-sm overflow-hidden"><table class="w-full text-sm text-left"><thead class="bg-slate-50 border-b"><tr><th class="p-4">Category</th><th class="p-4 text-right">Spent This Month</th></tr></thead><tbody id="fBody" class="divide-y"></tbody></table></div>
+                </div>
+            </section>
+
+            <section id="users" class="tab-content"><div class="bg-white p-8 rounded-3xl border shadow-sm max-w-xl"><h3 class="font-black mb-4 text-xl">Manage Users</h3><div class="grid grid-cols-2 gap-4"><input type="text" id="newUsername" placeholder="ID" class="border p-3 rounded-xl"><input type="password" id="newPassword" placeholder="Pass" class="border p-3 rounded-xl"><select id="newRole" class="border p-3 rounded-xl"><option value="admin">Principal</option><option value="accountant">Accountant</option></select><button onclick="createNewUser()" class="bg-blue-600 text-white rounded-xl font-bold">Create</button></div></div></section>
+        </div>
+    </main>
+
+    <script>
+        // Core Data
+        let students = JSON.parse(localStorage.getItem('nscb_students')) || [];
+        let staffMembers = JSON.parse(localStorage.getItem('nscb_staff')) || [];
+        let sessionBudget = JSON.parse(localStorage.getItem('nscb_yearly')) || {}; // Yearly target
+        let expenses = JSON.parse(localStorage.getItem('nscb_expenses')) || []; // [{t, a, m, y}]
+        let budgetCategories = JSON.parse(localStorage.getItem('nscb_categories')) || ["Food", "Salary", "Maintenance", "Stationery"];
+        let erpUsers = JSON.parse(localStorage.getItem('nscb_users')) || [{id:"warden", pass:"nscb123", role:"admin", name:"Principal Sir"}, {id:"accountant", pass:"acc456", role:"accountant", name:"Accountant"}];
+
+        let currentUser = null;
+
+        function save() {
+            localStorage.setItem('nscb_students', JSON.stringify(students));
+            localStorage.setItem('nscb_staff', JSON.stringify(staffMembers));
+            localStorage.setItem('nscb_yearly', JSON.stringify(sessionBudget));
+            localStorage.setItem('nscb_expenses', JSON.stringify(expenses));
+            localStorage.setItem('nscb_users', JSON.stringify(erpUsers));
+            localStorage.setItem('nscb_categories', JSON.stringify(budgetCategories));
+        }
+
+        // Fix: Month-Year Logic for Session (April-March)
+        function getTargetYear() {
+            let startYear = parseInt(document.getElementById('selSession').value);
+            let month = parseInt(document.getElementById('selMonth').value);
+            return (month < 3) ? startYear + 1 : startYear;
+        }
+
+        function getMonthKey() {
+            return `${getTargetYear()}-${document.getElementById('selMonth').value}`;
+        }
+
+        function initGrids() {
+            const days = new Date(getTargetYear(), parseInt(document.getElementById('selMonth').value) + 1, 0).getDate();
+            const curMonthName = document.getElementById('selMonth').options[document.getElementById('selMonth').selectedIndex].text;
+            document.getElementById('curMonthLabel').innerText = curMonthName;
+
+            let h = `<th class="p-4 sticky-col min-w-[200px]">Details</th>`;
+            for(let i=1; i<=days; i++) h += `<th class="text-center text-[10px] p-1 border">${i}</th>`;
+            document.getElementById('sHead').innerHTML = h + `<th class="p-4">Present</th>`;
+            document.getElementById('stHead').innerHTML = h + `<th class="p-4">Pay</th>`;
+            
+            renderS(); renderSt(); updateFinance();
+        }
+
+        // Fix: Attendance renders only for selected MonthKey
+        function renderS() {
+            const mKey = getMonthKey();
+            const days = new Date(getTargetYear(), parseInt(document.getElementById('selMonth').value) + 1, 0).getDate();
+            document.getElementById('sBody').innerHTML = students.map((s, idx) => {
+                let r = `<td class="p-4 sticky-col font-bold text-xs">${s.name}</td>`;
+                let count = 0;
+                for(let i=1; i<=days; i++) {
+                    const v = (s.att && s.att[mKey]) ? (s.att[mKey][i] || '-') : '-';
+                    if(v === 'P') count++;
+                    r += `<td class="att-cell ${v==='P'?'att-p':v==='A'?'att-a':v==='L'?'att-l':''}" onclick="toggleAtt('s', ${idx}, ${i})">${v}</td>`;
+                }
+                return `<tr>${r}<td class="text-center font-bold">${count}</td></tr>`;
+            }).join('');
+            document.getElementById('dash-s').innerText = students.length;
+        }
+
+        function renderSt() {
+            const mKey = getMonthKey();
+            const days = new Date(getTargetYear(), parseInt(document.getElementById('selMonth').value) + 1, 0).getDate();
+            let totalPay = 0;
+            document.getElementById('stBody').innerHTML = staffMembers.map((st, idx) => {
+                let r = `<td class="p-4 sticky-col font-bold text-xs">${st.name}</td>`;
+                let count = 0;
+                for(let i=1; i<=days; i++) {
+                    const v = (st.att && st.att[mKey]) ? (st.att[mKey][i] || '-') : '-';
+                    if(v === 'P') count++;
+                    r += `<td class="att-cell ${v==='P'?'att-p':v==='A'?'att-a':v==='L'?'att-l':''}" onclick="toggleAtt('st', ${idx}, ${i})">${v}</td>`;
+                }
+                const net = Math.round((st.salary / days) * count); totalPay += net;
+                return `<tr>${r}<td class="text-center font-bold text-blue-700">₹${net.toLocaleString()}</td></tr>`;
+            }).join('');
+            document.getElementById('dash-pay').innerText = totalPay.toLocaleString();
+        }
+
+        function toggleAtt(type, idx, day) {
+            const mKey = getMonthKey();
+            const target = type === 's' ? students[idx] : staffMembers[idx];
+            if(!target.att) target.att = {};
+            if(!target.att[mKey]) target.att[mKey] = {};
+            
+            const current = target.att[mKey][day] || '-';
+            const sequence = {'-': 'P', 'P': 'A', 'A': 'L', 'L': '-'};
+            target.att[mKey][day] = sequence[current];
+            save(); type === 's' ? renderS() : renderSt();
+        }
+
+        // Fix: Expenses filtered by month and year
+        function updateFinance() {
+            const curY = getTargetYear();
+            const curM = document.getElementById('selMonth').value;
+            const options = budgetCategories.map(t => `<option value="${t}">${t}</option>`).join('');
+            document.getElementById('fTopic').innerHTML = options;
+            document.getElementById('expTopic').innerHTML = options;
+
+            const list = document.getElementById('balList'); list.innerHTML = '';
+            let totalRem = 0; let monthTotal = 0;
+
+            for(let t in sessionBudget) {
+                // Session-wide calculation
+                const totalSpent = expenses.filter(e => e.t === t).reduce((s, e) => s + e.a, 0);
+                const bal = sessionBudget[t] - totalSpent; totalRem += bal;
+                
+                // Monthly view
+                const monthSpent = expenses.filter(e => e.t === t && e.m == curM && e.y == curY).reduce((s, e) => s + e.a, 0);
+                monthTotal += monthSpent;
+
+                list.insertAdjacentHTML('beforeend', `<div class="p-4 bg-slate-50 border rounded-2xl"><div class="flex justify-between font-bold text-xs"><span>${t}</span><span>Bal: ₹${bal.toLocaleString()}</span></div><div class="w-full bg-slate-200 h-1 mt-2 rounded-full"><div class="bg-blue-600 h-1 rounded-full" style="width:${Math.min(100, (totalSpent/sessionBudget[t])*100)}%"></div></div></div>`);
+            }
+            document.getElementById('dash-bal').innerText = totalRem.toLocaleString();
+            document.getElementById('dash-exp-month').innerText = monthTotal.toLocaleString();
+            
+            document.getElementById('fBody').innerHTML = budgetCategories.map(cat => {
+                const amt = expenses.filter(e => e.t === cat && e.m == curM && e.y == curY).reduce((s, e) => s + e.a, 0);
+                return `<tr><td class="p-4">${cat}</td><td class="p-4 text-right font-bold">₹${amt.toLocaleString()}</td></tr>`;
+            }).join('');
+        }
+
+        function addExp() {
+            expenses.push({
+                t: document.getElementById('expTopic').value, 
+                a: parseFloat(document.getElementById('expAmt').value), 
+                m: document.getElementById('selMonth').value,
+                y: getTargetYear()
+            });
+            save(); updateFinance();
+        }
+
+        // (Auth, Navigation, and helper functions remain from v7.0)
+        function handleLogin() {
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+            const user = erpUsers.find(x => x.id === u && x.pass === p);
+            if(user) { currentUser = user; document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('roleBadge').innerText = user.role.toUpperCase(); document.getElementById('welcomeMsg').innerText = `Logged in: ${user.name}`; applyPermissions(); initGrids(); }
+            else { document.getElementById('loginError').classList.remove('hidden'); }
+        }
+        function applyPermissions() {
+            document.querySelectorAll('.sidebar-link').forEach(btn => { if(currentUser.role !== 'admin' && btn.getAttribute('data-role') === 'admin') btn.style.display = 'none'; });
+            if(currentUser.role === 'accountant') showTab('finance', document.querySelector('[data-role="all"]'));
+        }
+        function showTab(id, btn) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); }
+        function addStudent() { students.push({ name: document.getElementById('sName').value, cls: document.getElementById('sClass').value, vendor: document.getElementById('sVendor').value, att: {} }); save(); renderS(); }
+        function addStaff() { staffMembers.push({ name: document.getElementById('stName').value, post: document.getElementById('stPost').value, salary: parseFloat(document.getElementById('stMonthly').value), att: {} }); save(); renderSt(); }
+        function setYearly() { sessionBudget[document.getElementById('fTopic').value] = parseFloat(document.getElementById('fYearly').value); save(); updateFinance(); }
+        function addNewBudgetCategory() { const val = document.getElementById('newBudgetTitle').value; if(val && !budgetCategories.includes(val)) { budgetCategories.push(val); save(); updateFinance(); } }
+        function createNewUser() { erpUsers.push({ id: document.getElementById('newUsername').value, pass: document.getElementById('newPassword').value, role: document.getElementById('newRole').value, name: document.getElementById('newUsername').value }); save(); alert("Done!"); }
+        function globalSearch(input) { const q = input.value.toLowerCase(); document.querySelectorAll('tbody tr').forEach(tr => tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none'); }
+        function exportExcel(id, name) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}_NSCB.xlsx`); }
+    </script>
+</body>
+</html>
