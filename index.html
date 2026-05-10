@@ -3,117 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSCB Alipur | Ultimate ERP v8.0</title>
+    <title>School Fund Management</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .sidebar-link.active { background: #1e40af; border-left: 4px solid #fff; }
-        .att-cell { min-width: 35px; height: 35px; cursor: pointer; border: 1px solid #e2e8f0; font-weight: 800; font-size: 10px; text-align: center; }
-        .att-p { background: #dcfce7; color: #166534; }
-        .att-a { background: #fee2e2; color: #991b1b; }
-        .att-l { background: #fef9c3; color: #854d0e; }
-        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid #e2e8f0; }
-        #loginOverlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .sidebar-link.active {
+            background: #1e40af;
+            border-left: 4px solid #fff;
+        }
+
+        .att-cell {
+            min-width: 35px;
+            height: 35px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            font-weight: 800;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .att-p {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .att-a {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .att-l {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 10;
+            border-right: 2px solid #e2e8f0;
+        }
     </style>
 </head>
+
 <body class="bg-slate-50 flex h-screen overflow-hidden">
 
-    <div id="loginOverlay">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 text-center">
-            <img src="NSCB Logo.jpg" alt="Logo" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-blue-500 bg-white">
-            <h2 class="text-2xl font-black text-slate-800">NSCB ERP LOGIN</h2>
-            <p class="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Alipur, Haridwar</p>
-            <input type="text" id="loginUser" placeholder="Username" class="w-full border p-3 rounded-xl mb-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="password" id="loginPass" placeholder="Password" class="w-full border p-3 rounded-xl mb-6 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Login</button>
-            <p id="loginError" class="text-red-500 text-xs mt-4 font-bold hidden">Invalid Credentials!</p>
-        </div>
-    </div>
-
     <aside class="w-72 bg-slate-900 text-white flex flex-col shrink-0 shadow-2xl">
+
         <div class="p-8 border-b border-slate-700 bg-slate-950 flex flex-col items-center">
-            <img src="NSCB Logo.jpg" class="w-16 h-16 rounded-full border-2 border-white mb-2">
-            <h2 class="text-xl font-black tracking-tighter">NSCB ALIPUR</h2>
-            <p id="roleBadge" class="text-[9px] text-blue-400 font-bold uppercase tracking-widest bg-blue-900/30 px-2 py-1 rounded">ROLE</p>
+
+            <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-2xl font-black">
+                S
+            </div>
+
+            <h2 class="text-xl font-black tracking-tighter mt-3 text-center">
+                SCHOOL FUND MANAGEMENT
+            </h2>
+
         </div>
+
         <nav class="flex-1 mt-6 px-3 space-y-1">
-            <button data-role="admin" onclick="showTab('dashboard', this)" class="sidebar-link active w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">📊 Dashboard</button>
-            <button data-role="admin" onclick="showTab('students', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">🎓 Student Att.</button>
-            <button data-role="admin" onclick="showTab('staff', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">👥 Staff Payroll</button>
-            <button data-role="all" onclick="showTab('finance', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">💰 Financial Ledger</button>
-            <button data-role="admin" onclick="showTab('users', this)" class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">⚙️ User Settings</button>
+
+            <button onclick="showTab('dashboard', this)"
+                class="sidebar-link active w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">
+                📊 Dashboard
+            </button>
+
+            <button onclick="showTab('students', this)"
+                class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">
+                🎓 Student Records
+            </button>
+
+            <button onclick="showTab('staff', this)"
+                class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">
+                👥 Teacher Payroll
+            </button>
+
+            <button onclick="showTab('finance', this)"
+                class="sidebar-link w-full text-left p-4 rounded-xl hover:bg-slate-800 transition">
+                💰 School Funds
+            </button>
+
         </nav>
-        <button onclick="location.reload()" class="m-6 p-3 bg-red-900/20 text-red-400 text-xs font-bold rounded-xl border border-red-900/50">Logout</button>
+
     </aside>
 
     <main class="flex-1 flex flex-col overflow-y-auto">
+
         <header class="bg-white border-b p-5 flex justify-between items-center px-10 sticky top-0 z-50 shadow-sm">
+
             <div class="flex items-center gap-4">
-                <select id="selSession" onchange="initGrids()" class="bg-blue-50 border-none rounded-lg font-black text-xs px-4 py-2 text-blue-700">
+
+                <select id="selSession"
+                    class="bg-blue-50 border-none rounded-lg font-black text-xs px-4 py-2 text-blue-700">
+
                     <option value="2025">SESSION 2025-26</option>
                     <option value="2026">SESSION 2026-27</option>
+
                 </select>
-                <select id="selMonth" onchange="initGrids()" class="bg-slate-100 border-none rounded-lg font-bold text-sm px-4 py-2">
-                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
-                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
-                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+
+                <select id="selMonth"
+                    class="bg-slate-100 border-none rounded-lg font-bold text-sm px-4 py-2">
+
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+
                 </select>
+
             </div>
-            <div class="flex items-center gap-6">
-                <input type="text" onkeyup="globalSearch(this)" placeholder="Search..." class="bg-slate-100 px-4 py-2 rounded-full text-xs w-48 border-none">
-                <div class="flex items-center gap-3">
-                    <span id="welcomeMsg" class="text-xs font-bold text-slate-600">User</span>
-                    <img src="NSCB Logo.jpg" class="w-10 h-10 rounded-full">
-                </div>
-            </div>
+
+            <input type="text"
+                placeholder="Search..."
+                class="bg-slate-100 px-4 py-2 rounded-full text-xs w-48 border-none">
+
         </header>
 
         <div class="p-10 space-y-10">
-            <section id="dashboard" class="tab-content active grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <!-- DASHBOARD -->
+
+            <section id="dashboard"
+                class="tab-content active grid grid-cols-1 md:grid-cols-4 gap-6">
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Students</p>
-                    <h3 class="text-4xl font-black mt-2" id="dash-s">0</h3>
+
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Total Funds
+                    </p>
+
+                    <h3 class="text-4xl font-black mt-2">
+                        ₹5,40,000
+                    </h3>
+
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Monthly Exp.</p>
-                    <h3 class="text-4xl font-black mt-2 text-red-600">₹<span id="dash-exp-month">0</span></h3>
+
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Monthly Expenses
+                    </p>
+
+                    <h3 class="text-4xl font-black mt-2 text-red-600">
+                        ₹85,000
+                    </h3>
+
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Staff Payout</p>
-                    <h3 class="text-4xl font-black mt-2 text-blue-600">₹<span id="dash-pay">0</span></h3>
+
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Teacher Salary
+                    </p>
+
+                    <h3 class="text-4xl font-black mt-2 text-blue-600">
+                        ₹1,25,000
+                    </h3>
+
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Net Balance</p>
-                    <h3 class="text-4xl font-black mt-2 text-green-600">₹<span id="dash-bal">0</span></h3>
+
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Net Balance
+                    </p>
+
+                    <h3 class="text-4xl font-black mt-2 text-green-600">
+                        ₹3,30,000
+                    </h3>
+
                 </div>
+
             </section>
+
+            <!-- STUDENTS -->
 
             <section id="students" class="tab-content space-y-6">
+
                 <div class="bg-white p-8 rounded-3xl border shadow-sm grid grid-cols-4 gap-4">
-                    <input type="text" id="sName" placeholder="Name" class="border p-3 rounded-xl text-sm"><input type="text" id="sClass" placeholder="Class" class="border p-3 rounded-xl text-sm"><input type="text" id="sVendor" placeholder="Vendor" class="border p-3 rounded-xl text-sm"><button onclick="addStudent()" class="bg-blue-600 text-white font-bold rounded-xl">Add</button>
+
+                    <input type="text"
+                        placeholder="Student Name"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <input type="text"
+                        placeholder="Class"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <input type="text"
+                        placeholder="Section"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <button class="bg-blue-600 text-white font-bold rounded-xl">
+                        Add Student
+                    </button>
+
                 </div>
-                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto"><table class="w-full text-left" id="studentTable"><thead class="bg-slate-50 border-b"><tr id="sHead"></tr></thead><tbody id="sBody" class="divide-y"></tbody></table></div>
+
+                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto">
+
+                    <table class="w-full text-left">
+
+                        <thead class="bg-slate-50 border-b">
+
+                            <tr>
+
+                                <th class="p-4">Student Name</th>
+                                <th class="p-4">Class</th>
+                                <th class="p-4">Section</th>
+                                <th class="p-4">Fee Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody class="divide-y">
+
+                            <tr>
+                                <td class="p-4">Rahul Sharma</td>
+                                <td class="p-4">10th</td>
+                                <td class="p-4">A</td>
+                                <td class="p-4 text-green-600 font-bold">Paid</td>
+                            </tr>
+
+                            <tr>
+                                <td class="p-4">Anjali Verma</td>
+                                <td class="p-4">9th</td>
+                                <td class="p-4">B</td>
+                                <td class="p-4 text-red-600 font-bold">Pending</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
             </section>
+
+            <!-- STAFF -->
 
             <section id="staff" class="tab-content space-y-6">
+
                 <div class="bg-white p-8 rounded-3xl border shadow-sm grid grid-cols-4 gap-4">
-                    <input type="text" id="stName" placeholder="Staff Name" class="border p-3 rounded-xl text-sm"><input type="text" id="stPost" placeholder="Post" class="border p-3 rounded-xl text-sm"><input type="number" id="stMonthly" placeholder="Salary" class="border p-3 rounded-xl text-sm"><button onclick="addStaff()" class="bg-slate-900 text-white font-bold rounded-xl">Add</button>
+
+                    <input type="text"
+                        placeholder="Teacher Name"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <input type="text"
+                        placeholder="Subject"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <input type="number"
+                        placeholder="Salary"
+                        class="border p-3 rounded-xl text-sm">
+
+                    <button class="bg-slate-900 text-white font-bold rounded-xl">
+                        Add Teacher
+                    </button>
+
                 </div>
-                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto"><table class="w-full text-left" id="staffTable"><thead class="bg-slate-50 border-b"><tr id="stHead"></tr></thead><tbody id="stBody" class="divide-y"></tbody></table></div>
+
+                <div class="bg-white rounded-3xl border shadow-sm overflow-x-auto">
+
+                    <table class="w-full text-left">
+
+                        <thead class="bg-slate-50 border-b">
+
+                            <tr>
+
+                                <th class="p-4">Teacher Name</th>
+                                <th class="p-4">Subject</th>
+                                <th class="p-4">Monthly Salary</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody class="divide-y">
+
+                            <tr>
+                                <td class="p-4">Amit Singh</td>
+                                <td class="p-4">Mathematics</td>
+                                <td class="p-4">₹40,000</td>
+                            </tr>
+
+                            <tr>
+                                <td class="p-4">Pooja Sharma</td>
+                                <td class="p-4">Science</td>
+                                <td class="p-4">₹38,000</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
             </section>
 
-            <section id="finance" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- FINANCE -->
+
+            <section id="finance"
+                class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
+
                 <div class="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
-                    <h3 class="font-black text-slate-800">Budget Allocation</h3>
-                    <div class="flex gap-2"><input type="text" id="newBudgetTitle" placeholder="Title" class="flex-1 border p-2 rounded-lg text-xs"><button onclick="addNewBudgetCategory()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">+</button></div>
-                    <select id="fTopic" class="w-full border p-3 rounded-xl text-sm"></select>
-                    <input type="number" id="fYearly" placeholder="Session Budget (₹)" class="w-full border p-3 rounded-xl text-sm"><button onclick="setYearly()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Allocate</button>
-                    <div id="balList" class="space-y-4 pt-4"></div>
+
+                    <h3 class="font-black text-slate-800">
+                        Budget Allocation
+                    </h3>
+
+                    <input type="text"
+                        placeholder="Budget Title"
+                        class="w-full border p-3 rounded-xl text-sm">
+
+                    <input type="number"
+                        placeholder="Amount"
+                        class="w-full border p-3 rounded-xl text-sm">
+
+                    <button class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
+                        Allocate Budget
+                    </button>
+
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl border shadow-sm lg:col-span-2">
+
+                    <h3 class="font-black text-slate-800 mb-6">
+                        Recent Transactions
+                    </h3>
+
+                    <table class="w-full text-left">
+
+                        <thead class="bg-slate-50 border-b">
+
+                            <tr>
+
+                                <th class="p-4">Date</th>
+                                <th class="p-4">Purpose</th>
+                                <th class="p-4">Amount</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody class="divide-y">
+
+                            <tr>
+                                <td class="p-4">10 May 2026</td>
+                                <td class="p-4">Library Books</td>
+                                <td class="p-4 text-red-600">₹12,000</td>
+                            </tr>
+
+                            <tr>
+                                <td class="p-4">08 May 2026</td>
+                                <td class="p-4">School Fees Collected</td>
+                                <td class="p-4 text-green-600">₹55,000</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <script>
+
+        function showTab(tabId, button) {
+
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            button.classList.add('active');
+        }
+
+    </script>
+
+</body>
+</html>                    <div id="balList" class="space-y-4 pt-4"></div>
                 </div>
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-8 rounded-3xl border shadow-sm">
